@@ -20,7 +20,8 @@ from __future__ import division
 import sys
 import time
 from collections import namedtuple
-from tkinter import ttk, Canvas, W
+import ttk
+from Tkinter import Canvas, W
 
 import numpy as np
 from common import visualize_training, Entity, ENV_TARGET_NAMES, ENV_ENTITIES, ENV_AGENT_NAMES, \
@@ -102,7 +103,6 @@ class FocusedAgent(AStarAgent):
 
         entities = state[1]
         state = state[0]
-
         me = [(j, i) for i, v in enumerate(state) for j, k in enumerate(v) if self.name in k]
         me_details = [e for e in entities if e['name'] == self.name][0]
         yaw = int(me_details['yaw'])

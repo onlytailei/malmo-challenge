@@ -87,7 +87,7 @@ def agent_factory(name, role, clients, device, max_epochs, logdir, visualizer):
             action = agent.act(obs, reward, agent_done, is_training=True)
             # take a step
             obs, reward, agent_done = env.do(action)
-
+            print obs
     else:
         env = PigChaseEnvironment(clients, PigChaseTopDownStateBuilder(True),
                                   role=role, randomize_positions=True)
@@ -180,5 +180,5 @@ if __name__ == '__main__':
                'device': args.device, 'max_epochs': args.epochs,
                'logdir': logdir, 'visualizer': visualizer}
               for role, agent in enumerate(ENV_AGENT_NAMES)]
-
+    print agents
     run_experiment(agents)
