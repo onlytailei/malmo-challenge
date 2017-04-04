@@ -6,7 +6,9 @@
 *.user
 *.userosscache
 *.sln.docstates
+/ai_challenge/pig_chase/models/*
 /ai_challenge/pig_chase/results/*
+/ai_challenge/pig_chase/pytorch-a3c/*
 /malmopy.egg-info/*
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
