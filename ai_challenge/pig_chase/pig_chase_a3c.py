@@ -115,7 +115,8 @@ def agent_factory(name, role, clients, device, max_epochs, logdir, shared_model,
         model = ActorCritic(1,3) # env state channel and action space
         model.train() 
          
-        state_ = env.reset().reshape(1,1,18,18)
+        state_ = env.reset()
+        state_ = state_.reshape(1,1,18,18)
         #print state.shape
         state = torch.from_numpy(state_)
         done = True
@@ -160,6 +161,12 @@ def agent_factory(name, role, clients, device, max_epochs, logdir, shared_model,
                 if done:
                     episode_length = 0
                     state_ = env.reset()
+                    while state_ is None:
+                        # this can happen if the episode 
+                        # ended with the first
+                        # action of the other agent
+                        print('Warning: received obs==None.')
+                        state_ = env.reset()
                     state_ = state_.reshape(1,1,18,18)
 
                 state = torch.from_numpy(state_)
