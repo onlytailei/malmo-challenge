@@ -140,7 +140,8 @@ def agent_factory(name, role, clients, logger, shared_model, optimizer, args, ma
             entropies = []
                 
             for step in range(args.num_steps):
-                img_win = image_visual(vis, state_, win=img_win)
+                if vis != None:
+                    img_win = image_visual(vis, state_, win=img_win)
                 value, logit, (hx, cx) = model(
                     (Variable(state), (hx, cx)))
                 prob = F.softmax(logit)
@@ -254,7 +255,8 @@ def run_experiment(agents_def):
     for agent in agents_def:
         agent['optimizer'] = optimizer
         agent['shared_model'] = shared_model
-        agent['vis'] = vis
+        agent['vis'] = None
+        #agent['vis'] = vis
         agent['main_step'] = main_step
         
         p = mp.Process(target=agent_factory, kwargs=agent)
