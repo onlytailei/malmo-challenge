@@ -150,6 +150,121 @@ class PigChaseTopDownStateBuilder(MalmoStateBuilder):
 
         return buffer / 255.
 
+class PigChaseTopDownStateBuilder4_channel(MalmoStateBuilder):
+    """
+    Generate low-res RGB top-down view (equivalent to the symbolic view)
+    """
+
+    RGB_PALETTE = {
+        'sand': [255, 225, 150],
+        'grass': [44, 176, 55],
+        'lapis_block': [190, 190, 255],
+        'Agent_1': [255, 0, 0],
+        'Agent_2': [0, 0, 255],
+        'Pig': [185, 126, 131]
+    }
+
+    GRAY_PALETTE = {
+        'sand': 255,
+        'grass': 200,
+        'lapis_block': 150,
+        'Agent_1': 100,
+        'Agent_2': 50,
+        'Pig': 0
+    }
+    
+    SEP_PALETTE = {
+        'sand': 0,
+        'grass': 1,
+        'lapis_block': 2,
+        'Agent_1': 1,
+        'Agent_2': 1,
+        'Pig': 1
+    }
+
+    def __init__(self, gray=True):
+        self._gray = bool(gray)
+
+    def build(self, environment):
+        world_obs = environment.world_observations
+        if world_obs is None or ENV_BOARD not in world_obs:
+            return None
+        # Generate symbolic view
+        board, entities = environment._internal_symbolic_builder.build(
+            environment)
+
+        palette = self.GRAY_PALETTE if self._gray else self.RGB_PALETTE
+        buffer_shape = (5, board.shape[0] * 2, board.shape[1] * 2)
+        if not self._gray:
+            buffer_shape = buffer_shape + (3,)
+        buffer = np.zeros(buffer_shape, dtype=np.float32)
+
+        it = np.nditer(board, flags=['multi_index', 'refs_ok'])
+
+        while not it.finished:
+            entities_on_cell = str.split(str(board[it.multi_index]), '/')
+            mapped_value = palette[entities_on_cell[0]]
+            mapped_value_2 = self.SEP_PALETTE[entities_on_cell[0]]
+            # draw 4 pixels per block
+            buffer[0,
+                   it.multi_index[0] * 2:it.multi_index[0] * 2 + 2,
+                   it.multi_index[1] * 2:it.multi_index[1] * 2 + 2] = mapped_value
+            buffer[1,
+                   it.multi_index[0] * 2:it.multi_index[0] * 2 + 2,
+                   it.multi_index[1] * 2:it.multi_index[1] * 2 + 2] = mapped_value_2
+            it.iternext()
+
+        for (i, agent) in enumerate(entities):
+            agent_x = int(agent['x'])
+            agent_z = int(agent['z']) + 1
+            agent_pattern = buffer[0,
+                                   agent_z * 2:agent_z * 2 + 2,
+                                   agent_x * 2:agent_x * 2 + 2]
+            
+            single_channel = np.zeros((2,2), dtype=np.float32)
+
+            # convert Minecraft yaw to 0=north, 1=west etc.
+            agent_direction = ((((int(agent['yaw']) - 45) % 360) // 90) - 1) % 4
+
+            if agent_direction == 0:
+                # facing north
+                agent_pattern[1, 0:2] = palette[agent['name']]
+                agent_pattern[0, 0:2] += palette[agent['name']]
+                agent_pattern[0, 0:2] /= 2.
+                single_channel[1, 0:2] = 0
+                single_channel[0, 0:2] = 1
+            elif agent_direction == 1:
+                # west
+                agent_pattern[0:2, 1] = palette[agent['name']]
+                agent_pattern[0:2, 0] += palette[agent['name']]
+                agent_pattern[0:2, 0] /= 2.
+                single_channel[0:2, 1] = 0
+                single_channel[0:2, 0] = 1
+            elif agent_direction == 2:
+                # south
+                agent_pattern[0, 0:2] = palette[agent['name']]
+                agent_pattern[1, 0:2] += palette[agent['name']]
+                agent_pattern[1, 0:2] /= 2.
+                single_channel[0, 0:2] = 0
+                single_channel[1, 0:2] = 1
+            else:
+                # east
+                agent_pattern[0:2, 0] = palette[agent['name']]
+                agent_pattern[0:2, 1] += palette[agent['name']]
+                agent_pattern[0:2, 1] /= 2.
+                single_channel[0:2, 0] = 0
+                single_channel[0:2, 1] = 1
+
+            buffer[0, 
+                   agent_z * 2:agent_z * 2 + 2,
+                   agent_x * 2:agent_x * 2 + 2] = agent_pattern
+            
+            buffer[i+2, 
+                   agent_z * 2:agent_z * 2 + 2,
+                   agent_x * 2:agent_x * 2 + 2] = single_channel
+        
+        buffer[0]=buffer[0] / 255.
+        return buffer
 
 class PigChaseEnvironment(MalmoEnvironment):
     """

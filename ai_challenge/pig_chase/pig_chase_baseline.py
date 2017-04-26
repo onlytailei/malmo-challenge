@@ -66,7 +66,7 @@ def agent_factory(name, role, baseline_agent, clients, max_epochs,
 
         reward = 0
         agent_done = False
-
+        print "this process fine"
         while True:
 
             # select an action

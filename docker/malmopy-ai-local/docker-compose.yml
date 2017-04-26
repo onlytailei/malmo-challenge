@@ -15,42 +15,48 @@
 # SOFTWARE.
 # ===================================================================================================================
 
-FROM ubuntu:16.04
+version: '3'
+services:
+  malmo1:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+  malmo2:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+  #malmo3:
+    #image: malmo:latest
+    #networks:
+      #- malmo_net
+  #malmo4:
+    #image: malmo:latest
+    #networks:
+      #- malmo_net
+  agents:
+    image: onlytailei/malmopy-pytorch-cpu:latest
+    volumes: 
+      - /home/tai/malmo_tai/malmo-challenge:/root/malmo-challenge
+    working_dir: /root/malmo-challenge/ai_challenge/pig_chase
+    entrypoint: /bin/bash
+    command: /root/malmo-challenge/ai_challenge/pig_chase/start_local.sh
+    ports:
+      - "8097:8097"
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
 
-ENV MALMO_VERSION 0.21.0
-
-# Install Malmo dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    openjdk-8-jdk \
-    libxerces-c3.1 \
-    libav-tools \
-    wget \
-    unzip \
-    xvfb && \
-    rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
-
-# Download and unpack Malmo
-WORKDIR /root
-RUN wget https://github.com/Microsoft/malmo/releases/download/$MALMO_VERSION/Malmo-$MALMO_VERSION-Linux-Ubuntu-16.04-64bit_withBoost.zip && \
-    unzip Malmo-$MALMO_VERSION-Linux-Ubuntu-16.04-64bit_withBoost.zip && \
-    rm Malmo-$MALMO_VERSION-Linux-Ubuntu-16.04-64bit_withBoost.zip && \
-    mv Malmo-$MALMO_VERSION-Linux-Ubuntu-16.04-64bit_withBoost Malmo
-ENV MALMO_XSD_PATH /root/Malmo/Schemas
-
-# Precompile Malmo mod
-RUN mkdir ~/.gradle && echo 'org.gradle.daemon=true\n' > ~/.gradle/gradle.properties
-WORKDIR /root/Malmo/Minecraft
-RUN ./gradlew setupDecompWorkspace
-RUN ./gradlew build
-
-# Unlimited framerate settings
-COPY options.txt /root/Malmo/Minecraft/run
-
-COPY run.sh /root/
-RUN chmod +x /root/run.sh
-
-# Expose port
-EXPOSE 10000
-
-# Run Malmo
-ENTRYPOINT ["/root/run.sh", "/root/Malmo/Minecraft/launchClient.sh"]
+networks:
+  malmo_net:
+    external: true

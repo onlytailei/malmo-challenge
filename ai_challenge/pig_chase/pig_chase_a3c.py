@@ -26,15 +26,10 @@ import multiprocessing as mp
 import numpy as np
 import scipy.ndimage
 
-from malmopy.agent import LinearEpsilonGreedyExplorer, RandomAgent
-from malmopy.model.chainer import QNeuralNetwork, DQNChain
-
-from common import parse_clients_args, visualize_training, ENV_AGENT_NAMES
-from agent import PigChaseChallengeAgent, PigChaseQLearnerAgent
-from environment import PigChaseEnvironment, PigChaseSymbolicStateBuilder, \
-    PigChaseTopDownStateBuilder
-
-from malmopy.agent import TemporalMemory
+from malmopy.agent import RandomAgent
+from common import parse_clients_args, ENV_AGENT_NAMES
+from agent import PigChaseChallengeAgent
+from environment import PigChaseEnvironment, PigChaseSymbolicStateBuilder, PigChaseTopDownStateBuilder,PigChaseTopDownStateBuilder4_channel
 
 from model import ActorCritic
 import my_optim
@@ -43,28 +38,31 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 from multiprocessing import Value
 import visdom
-#try:
-    #from malmopy.visualization.tensorboard import TensorboardVisualizer
-    #from malmopy.visualization.tensorboard.cntk import CntkConverter
-#except ImportError:
-    #print('Cannot import tensorboard, using ConsoleVisualizer.')
-    #from malmopy.visualization import ConsoleVisualizer
-
-# Torch Area
-
+import logging
 
 # Enforce path
 sys.path.insert(0, os.getcwd())
 sys.path.insert(1, os.path.join(os.path.pardir, os.getcwd()))
 
-DQN_FOLDER = 'results/baselines/%s/dqn/%s-%s'
 EPOCH_SIZE = 100000
 
+def loggerConfig():
+    #ts = str(time.strftime('%Y-%m-%d-%H-%M-%S'))
+    logger = logging.getLogger()
+    formatter = logging.Formatter(
+            '%(asctime)s %(levelname)-2s %(message)s')
+    logdir = path.join('results/a3c/', datetime.utcnow().isoformat())
+    #fileHandler_ = logging.FileHandler(logdir)
+    #fileHandler_.setFormatter(formatter)
+    #logger.addHandler(fileHandler_)
+    logger.setLevel(logging.INFO)
+    return logger
 
-def agent_factory(name, role, clients, device, max_epochs, logdir, shared_model, optimizer, args, main_step, vis=None):
-    #assert len(clients) >= 2, 'Not enough clients (need at least 2)'
+def agent_factory(name, role, clients, logger, shared_model, optimizer, args, main_step, vis=None):
+    assert len(clients) >= 2, 'Not enough clients (need at least 2)'
     clients = parse_clients_args(clients)
-
+    logger.info("clients: %s, %s", clients[0], clients[1])
+    # parterner 
     if role == 0:
 
         builder = PigChaseSymbolicStateBuilder()
@@ -100,28 +98,27 @@ def agent_factory(name, role, clients, device, max_epochs, logdir, shared_model,
             # take a step
             obs, reward, agent_done = env.do(action)
     else:
-        env = PigChaseEnvironment(clients, PigChaseTopDownStateBuilder(True),
-                                  role=role, randomize_positions=True)
+        env = PigChaseEnvironment(clients, 
+                PigChaseTopDownStateBuilder4_channel(True),
+                role=role, 
+                randomize_positions=True)
         
-        #memory = TemporalMemory(100000, (18, 18))
-        #chain = DQNChain((memory.history_length, 18, 18), env.available_actions)
-        #target_chain = DQNChain((memory.history_length, 18, 18), env.available_actions)
-        #model = QNeuralNetwork(chain, target_chain, device)
-        #explorer = LinearEpsilonGreedyExplorer(1, 0.1, 1000000)
-        #agent = PigChaseQLearnerAgent(name, env.available_actions,
-                                      #model, memory, 0.99, 32, 50000,
-                                      #explorer=explorer, visualizer=visualizer)
-        
-        model = ActorCritic(1,3) # env state channel and action space
+        model = ActorCritic(4,3) # env state channel and action space
         model.train() 
          
         state_ = env.reset()
-        state_ = state_.reshape(1,1,18,18)
-        #print state.shape
-        state = torch.from_numpy(state_)
+        while state_ is None:
+            # this can happen if the episode 
+            # ended with the first
+            # action of the other agent
+            logger.info('Warning: received obs==None.')
+            state_ = env.reset()
+        #logger.info("state, %s", state_[:,:10,:10]) 
+        state_ = state_.reshape(1,5,18,18)
+        state = torch.from_numpy(state_[:1,1:,2:-2,2:-2])
         done = True
         
-        max_training_steps = EPOCH_SIZE * max_epochs
+        #max_training_steps = EPOCH_SIZE
         episode_length = 0
         loss_history = []
         win = None
@@ -154,8 +151,9 @@ def agent_factory(name, role, clients, device, max_epochs, logdir, shared_model,
                 action = prob.multinomial().data
                 log_prob = log_prob.gather(1, Variable(action))
                 state_, reward, done = env.do(action.numpy()[0][0])
-                state_ = state_.reshape(1,1,18,18)
-                done = done or episode_length >= args.max_episode_length
+                #logger.info("state: %s", state_)
+                #state_ = state_.reshape(1,5,18,18)
+                #done = done or episode_length >= args.max_episode_length
                 #reward = max(min(reward, 1), -1)
 
                 if done:
@@ -165,16 +163,14 @@ def agent_factory(name, role, clients, device, max_epochs, logdir, shared_model,
                         # this can happen if the episode 
                         # ended with the first
                         # action of the other agent
-                        print('Warning: received obs==None.')
+                        logger.info('Warning: received obs==None.')
                         state_ = env.reset()
-                    state_ = state_.reshape(1,1,18,18)
 
-                state = torch.from_numpy(state_)
+                state_ = state_.reshape(1,5,18,18)
+                state = torch.from_numpy(state_[:1,1:,2:-2,2:-2])
                 values.append(value)
                 log_probs.append(log_prob)
                 rewards.append(reward)
-                
-                #print state.numpy().shape, done, reward
 
                 if done:
                     break
@@ -214,20 +210,16 @@ def agent_factory(name, role, clients, device, max_epochs, logdir, shared_model,
             optimizer.step()
             main_step.value +=1
 
-
 def loss_visual(vis, loss_history, main_step, win):
-    if main_step.value > 3:
+    if main_step.value > 100:
         Y_ = np.array(loss_history).reshape(-1,1)
         win = vis.line(Y = Y_, X = np.arange(len(loss_history)), win=win)
         return win 
 
 def image_visual(vis, img, win):
-    img_ = np.reshape(img, (18,18))
+    img_ = np.reshape(img[0,0,4:-4,4:-4], (10,10))
     img_ = scipy.ndimage.zoom(img_, 10, order=0)
     img_ = np.stack((img_,)*3)
-    #img_f = scipy.ndimage.zoom(img_, 10, order=0)
-    #print img_f.shape
-    #img_ = cv2.resize(img_,(160,160))
     win = vis.image(img_, win=win)
     return win 
 
@@ -237,14 +229,18 @@ def ensure_shared_grads(model, shared_model):
             return
         shared_param._grad = param.grad
 
-def test_process(model, step):
-    if step.value%5000==0:
-        torch.save(model.state_dict(), './models/'+str(step.value)+'_weight')
-    sleep(10)
+def test_process(model, step,logger):
+    while True:
+        #logger.info("test step value: %d", step.value)
+        if step.value%500==0:
+            torch.save(model.state_dict(), '/root/malmo_save/'+str(step.value)+'_weight')
+            logger.info("save model in step %d", step.value)
+            sleep(10)
+        #sleep(0.01)
 
 def run_experiment(agents_def):
-    #assert len(agents_def) == 2, 'Not enough agents (required: 2, got: %d)'% len(agents_def)
-    shared_model = ActorCritic(1,3)
+    assert len(agents_def) >= 2, 'Not enough agents (required: 2, got: %d)'% len(agents_def)
+    shared_model = ActorCritic(4,3)
     shared_model.share_memory()
     optimizer = my_optim.SharedAdam(shared_model.parameters(), lr=0.0001)
     optimizer.share_memory()
@@ -252,18 +248,16 @@ def run_experiment(agents_def):
     vis = visdom.Visdom()
     
     processes = []
-    test_p = mp.Process(target=test_process, kwargs={'model':shared_model, 'step':main_step})
+    test_p = mp.Process(target=test_process, kwargs={'model':shared_model, 'step':main_step, 'logger':agents_def[0]['logger']})
     test_p.start()
     processes.append(test_p)
-        
     for agent in agents_def:
         agent['optimizer'] = optimizer
         agent['shared_model'] = shared_model
         agent['vis'] = vis
         agent['main_step'] = main_step
-        #p = Thread(target=agent_factory, kwargs=agent)
+        
         p = mp.Process(target=agent_factory, kwargs=agent)
-        #p.daemon = True
         p.start()
 
         # Give the server time to start
@@ -271,8 +265,6 @@ def run_experiment(agents_def):
             sleep(1)
 
         processes.append(p)
-     
-
 
     try:
         # wait until only the challenge agent is left
@@ -284,34 +276,28 @@ def run_experiment(agents_def):
 
 
 if __name__ == '__main__':
-    arg_parser = ArgumentParser('Pig Chase DQN experiment')
-    arg_parser.add_argument('-e', '--epochs', type=int, default=5,
-                            help='Number of epochs to run.')
+    arg_parser = ArgumentParser('Pig Chase A3C experiment')
     arg_parser.add_argument('clients', nargs='*',
-            default=['127.0.0.1:10000', '127.0.0.1:10001', '127.0.0.1:10002', '127.0.0.1:10003'],
+            default=['10.5.167.15:10000', '10.5.167.15:10001'],
                             help='Minecraft clients endpoints (ip(:port)?)+')
-    arg_parser.add_argument('-d', '--device', type=int, default=-1,
-                            help='GPU device on which to run the experiment.')
-    arg_parser.add_argument('-n', '--number_paralle', type=int, default=2,
-                            help='number of a3c processes.')
-    arg_parser.add_argument('--num-steps', type=int, default=10, metavar='NS',
-                    help='number of forward steps in A3C (default: 20)')
+    arg_parser.add_argument('--num-steps', type=int, default=25, metavar='NS',
+                    help='number of forward steps in A3C (default: 25)')
     arg_parser.add_argument('--lr', type=float, default=0.0001, metavar='LR',
                     help='learning rate (default: 0.0001)')
-    arg_parser.add_argument('--max-episode-length', type=int, default=10000, 
-            metavar='M',help='maximum length of an episode (default: 10000)')
     arg_parser.add_argument('--gamma', type=float, default=0.99, metavar='G',
                     help='discount factor for rewards (default: 0.99)')
-    arg_parser.add_argument('--num-processes', type=int, default=2, metavar='N',
+    arg_parser.add_argument('--num-processes', type=int, default=8, metavar='N',
                     help='how many training processes to use (default: 4)')
     args = arg_parser.parse_args()
     
-    logdir = path.join('results/pig_chase/dqn', datetime.utcnow().isoformat())
-    
+    logger = loggerConfig()
+
     agents = []
     for item in xrange(args.num_processes): 
-        agents += [{'name': agent, 'role': role, 'clients': args.clients[item*2:item*2+2],
-                   'device': args.device, 'max_epochs': args.epochs,
-                   'logdir': logdir, 'args':args}
-                  for role, agent in enumerate(ENV_AGENT_NAMES)]
+        agents += [{'name': agent, 
+                'role': role, 
+                'clients': args.clients[item*2:item*2+2], 
+                'logger': logger, 
+                'args':args}
+                for role, agent in enumerate(ENV_AGENT_NAMES)]
     run_experiment(agents)
