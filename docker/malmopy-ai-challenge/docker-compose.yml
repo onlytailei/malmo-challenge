@@ -19,18 +19,148 @@ version: '3'
 services:
   malmo1:
     image: malmo:latest
-    expose:
-      - "10000"
+    networks:
+      - malmo_net
+    #deploy:
+      #placement:
+        #constraints:
+          #- node.role == worker
   malmo2:
-      image: malmo:latest
-      expose:
-        - "10000"
+    image: malmo:latest
+    networks:
+      - malmo_net
+  malmo3:
+    image: malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+  malmo4:
+    image: malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+  malmo5:
+    image: malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+  malmo6:
+    image: malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+  malmo7:
+    image: malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+  malmo8:
+    image: malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+  malmo9:
+    image: malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+  malmo10:
+    image: malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+  malmo11:
+    image: malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+  malmo12:
+    image: malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+  malmo13:
+    image: malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+  malmo14:
+    image: malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+  malmo15:
+    image: malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+  malmo16:
+    image: malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
   agents:
-      image: malmopy-cntk-cpu-py27:latest
-      working_dir: /root/malmo-challenge/ai_challenge/pig_chase
-      command: bash -c "python pig_chase_baseline.py malmo1:10000 malmo2:10000 & tensorboard --logdir 'results' --port 6006"
-      ports:
-        - "6006:6006"
-      links:
-        - malmo1
-        - malmo2
+    image: onlytailei/malmopy-pytorch-cpu:latest
+    volumes: 
+      - /home/tai/malmo_tai/malmo-challenge:/root/malmo-challenge
+      - malmo_volume:/root/malmo_save
+    working_dir: /root/malmo-challenge/ai_challenge/pig_chase
+    entrypoint: /bin/bash
+    command: /root/malmo-challenge/ai_challenge/pig_chase/start.sh
+    ports:
+      - "8097:8097"
+    networks:
+      - malmo_net
+    #deploy:
+      #placement:
+        #constraints:
+          #- node.role == manager
+
+networks:
+  malmo_net:
+    external: true
+volumes:
+  malmo_volume:
+    external: true

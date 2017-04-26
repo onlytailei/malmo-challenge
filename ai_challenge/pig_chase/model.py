@@ -36,12 +36,12 @@ class ActorCritic(torch.nn.Module):
 
     def __init__(self, num_inputs, action_space):
         super(ActorCritic, self).__init__()
-        self.conv1 = nn.Conv2d(num_inputs, 32, 3, stride=2, padding=1)
+        self.conv1 = nn.Conv2d(num_inputs, 32, 3, padding=1)
         self.conv2 = nn.Conv2d(32, 32, 3, stride=2, padding=1)
         self.conv3 = nn.Conv2d(32, 32, 3, stride=2, padding=1)
         self.conv4 = nn.Conv2d(32, 32, 3, stride=2, padding=1)
         
-        self.lstm = nn.LSTMCell(32 * 2 * 2, 256)
+        self.lstm = nn.LSTMCell(32*2*2, 256)
 
         num_outputs = action_space
         self.critic_linear = nn.Linear(256, 1)
@@ -66,7 +66,7 @@ class ActorCritic(torch.nn.Module):
         x = F.elu(self.conv2(x))
         x = F.elu(self.conv3(x))
         x = F.elu(self.conv4(x))
-        x = x.view(-1, 32 * 2 * 2)
+        x = x.view(-1, 32*2*2)
         hx, cx = self.lstm(x, (hx, cx))
         x = hx
 
