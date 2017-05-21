@@ -62,6 +62,7 @@ def loggerConfig():
 def agent_factory(name, role, clients, logger, shared_model, optimizer, args, main_step, vis=None):
     assert len(clients) >= 2, 'Not enough clients (need at least 2)'
     clients = parse_clients_args(clients)
+    print "Clients: ", clients
     logger.info("clients: %s, %s", clients[0], clients[1])
     # parterner 
     if role == 0:

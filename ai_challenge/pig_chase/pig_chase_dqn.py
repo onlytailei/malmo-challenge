@@ -51,10 +51,10 @@ EPOCH_SIZE = 100000
 
 def agent_factory(name, role, clients, backend,
                   device, max_epochs, logdir, visualizer):
-
+    print clients
     assert len(clients) >= 2, 'Not enough clients (need at least 2)'
     clients = parse_clients_args(clients)
-
+    print clients
     if role == 0:
 
         builder = PigChaseSymbolicStateBuilder()
