@@ -273,14 +273,31 @@ services:
       placement:
         constraints:
           - node.hostname == aiscpu3
+  malmo33:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu3
+  malmo34:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu3
   agents:
     image: onlytailei/malmopy-pytorch-cpu:latest
     volumes: 
       - /home/tai/malmo_tai/malmo-challenge:/root/malmo-challenge
-      - malmo_volume:/root/malmo_save
-    working_dir: /root/malmo-challenge/ai_challenge/pig_chase
+      - malmo_model:/root/malmo-challenge/ai_challenge/pig_chase/pytorch_rl/models
+      - malmo_log:/root/malmo-challenge/ai_challenge/pig_chase/pytorch_rl/logs
+    working_dir: /root/malmo-challenge/ai_challenge/pig_chase/pytorch_rl
     entrypoint: /bin/bash
-    command: /root/malmo-challenge/ai_challenge/pig_chase/start.sh
+    command: /root/malmo-challenge/ai_challenge/pig_chase/pytorch_rl/start.sh
     ports:
       - "8097:8097"
     networks:
@@ -294,5 +311,7 @@ networks:
   malmo_net:
     external: true
 volumes:
-  malmo_volume:
+  malmo_model:
+    external: true
+  malmo_log:
     external: true
