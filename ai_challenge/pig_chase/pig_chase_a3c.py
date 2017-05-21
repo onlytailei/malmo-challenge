@@ -22,6 +22,7 @@ from datetime import datetime
 from os import path
 from threading import Thread, active_count
 from time import sleep
+import time
 import multiprocessing as mp
 import numpy as np
 import scipy.ndimage
@@ -70,10 +71,10 @@ def agent_factory(name, role, clients, logger, shared_model, optimizer, args, ma
                                       randomize_positions=True)
 
             agent = PigChaseChallengeAgent(name)
-            if type(agent.current_agent) == RandomAgent:
-                agent_type = PigChaseEnvironment.AGENT_TYPE_1
-            else:
-                agent_type = PigChaseEnvironment.AGENT_TYPE_2
+            #if type(agent.current_agent) == RandomAgent:
+            #    agent_type = PigChaseEnvironment.AGENT_TYPE_1
+            #else:
+            agent_type = PigChaseEnvironment.AGENT_TYPE_2
 
             obs = env.reset(agent_type)
             reward = 0
@@ -82,11 +83,10 @@ def agent_factory(name, role, clients, logger, shared_model, optimizer, args, ma
             while True:
                 try:
                     if env.done:
-                        if type(agent.current_agent) == RandomAgent:
-                            agent_type = PigChaseEnvironment.AGENT_TYPE_1
-                        else:
-                            agent_type = PigChaseEnvironment.AGENT_TYPE_2
-
+                        #if type(agent.current_agent) == RandomAgent:
+                        #    agent_type = PigChaseEnvironment.AGENT_TYPE_1
+                        #else:
+                        agent_type = PigChaseEnvironment.AGENT_TYPE_2
                         obs = env.reset(agent_type)
                         while obs is None:
                             # this can happen if the episode ended with the first
@@ -218,7 +218,7 @@ def agent_factory(name, role, clients, logger, shared_model, optimizer, args, ma
                 except Exception:
                     break
 def loss_visual(vis, loss_history, main_step, win):
-    if main_step.value > 100:
+    if main_step.value > 200:
         Y_ = np.array(loss_history).reshape(-1,1)
         win = vis.line(Y = Y_, X = np.arange(len(loss_history)), win=win)
         return win 
@@ -236,14 +236,19 @@ def ensure_shared_grads(model, shared_model):
             return
         shared_param._grad = param.grad
 
-def test_process(model, step,logger):
+def test_process(model, step, logger):
+    start_time = time.time()
     while True:
         #logger.info("test step value: %d", step.value)
-        if step.value%500==0:
+        #if step.value%500==0:
+        #    torch.save(model.state_dict(), '/root/malmo_save/'+str(step.value)+'_weight')
+        #    logger.info("save model in step %d", step.value)
+        #    sleep(10)
+        if int(time.time()-start_time)%(17*60)==0:
             torch.save(model.state_dict(), '/root/malmo_save/'+str(step.value)+'_weight')
-            logger.info("save model in step %d", step.value)
+            torch.save(model.state_dict(), '/root/malmo_save/newest_weight')
+       #     logger.info("save model in step %d", step.value)
             sleep(10)
-        #sleep(0.01)
 
 def run_experiment(agents_def):
     assert len(agents_def) >= 2, 'Not enough agents (required: 2, got: %d)'% len(agents_def)
@@ -254,6 +259,9 @@ def run_experiment(agents_def):
     main_step = Value('l',0) 
     vis = visdom.Visdom()
     
+    if path.isfile('/root/malmo_save/newest_weight'):
+        shared_model.load_state_dict(torch.load('/root/malmo_save/newest_weight'))
+    
     processes = []
     test_p = mp.Process(target=test_process, kwargs={'model':shared_model, 'step':main_step, 'logger':agents_def[0]['logger']})
     test_p.start()
@@ -261,8 +269,8 @@ def run_experiment(agents_def):
     for agent in agents_def:
         agent['optimizer'] = optimizer
         agent['shared_model'] = shared_model
-        agent['vis'] = None
-        #agent['vis'] = vis
+        #agent['vis'] = None
+        agent['vis'] = vis
         agent['main_step'] = main_step
         
         p = mp.Process(target=agent_factory, kwargs=agent)
