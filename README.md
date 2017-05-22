@@ -64,6 +64,11 @@ The main training code is in _[pig_chase_a3c.py](https://github.com/onlytailei/m
 
 The weights are saved every 17 mins. They are saved in the created docker volume _malmo_volume_. We can run an arbitrary image with this volume to copy the weights to local.
 
+For periodical finetuning, directly run this script
+```
+malmo_loop.sh
+```
+
 ### Evaluation
 Evaluation is also implemented in docker. The result json will be saved in docker volume _malmo_volume_
 ```
