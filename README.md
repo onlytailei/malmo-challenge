@@ -33,7 +33,7 @@ Our final evaluation result is here: ``https://github.com/jingweiz/malmo-challen
 
 ## How to reproduce the result
 ### Training environment configuration
-We train our model with 3 CPU servers. Firstly we build a docker swarm with docker swarm mode and let all of these three CPU servers join this docker swarm. We build a docker:
+We distribute our training over 3 CPU servers. Firstly we build a docker swarm with docker swarm mode and let all of these three CPU servers join this docker swarm. We build a docker swarm by:
 In manager node:
 ```
 docker swarm init --advertise-addr <MANAGER node ip>
@@ -52,7 +52,8 @@ Create a docker volume for models weights saving:
 ```
 docker volume create malmo_volume
 ```
-Build the training docker image. You can find the Dockerfile for _onlytailei:malmo:latest_ and _onlytailei/malmopy-pytorch-cpu:latest_ in [Dockerfile](https://github.com/onlytailei/malmo-challenge/blob/master/docker/malmo/Dockerfile) and [Dockerfile](https://github.com/onlytailei/malmo-challenge/blob/master/docker/malmopy-pytorch-cpu/Dockerfile).
+Build the training docker image:
+You can find the Dockerfile for ``onlytailei:malmo:latest`` and ``onlytailei/malmopy-pytorch-cpu:latest`` in [Dockerfile](https://github.com/onlytailei/malmo-challenge/blob/master/docker/malmo/Dockerfile) and [Dockerfile](https://github.com/onlytailei/malmo-challenge/blob/master/docker/malmopy-pytorch-cpu/Dockerfile).
 
 ### Training
 Then in the worker node of docker swarm, start the docker-compose file using docker stack:
