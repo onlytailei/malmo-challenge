@@ -29,14 +29,6 @@ class MalmoEnv(Env):
         self.clients = parse_clients_args([self.host+str((env_ind+1)*2-1)+':10000', self.host+str((env_ind+1)*2)+':10000'])
         print (self.clients)
         
-        #oppenent agent
-        self.oppenent_thread = mp.Process(target=self._opponent_env, kwargs={'pid':env_ind})
-        self.oppenent_thread.daemon=True
-        self.oppenent_thread.start()
-        sleep(1)
-        
-        # TODO
-        # define clients 
         self.env = PigChaseEnvironment(self.clients, 
                 PigChaseTopDownStateBuilder(True),
                 role= 1, 
@@ -49,9 +41,6 @@ class MalmoEnv(Env):
         # state space setup
         self.logger.warning("State  Space: %s", self.state_shape)
         print ("init now over")
-    
-    def __del__(self):
-        self.oppenent_thread.terminate()
 
     @property
     def action_dim(self):
