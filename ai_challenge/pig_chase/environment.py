@@ -19,6 +19,7 @@ from __future__ import absolute_import
 
 import json
 import re
+import os
 
 import numpy as np
 
@@ -294,7 +295,7 @@ class PigChaseEnvironment(MalmoEnvironment):
 
         assert isinstance(state_builder, MalmoStateBuilder)
 
-        self._mission_xml = open('pig_chase.xml', 'r').read()
+        self._mission_xml = open(os.path.dirname(__file__)+os.sep+'pig_chase.xml', 'r').read()
         # override tics per ms to play at human speed
         if human_speed:
             print('Setting mission to run at human speed')
