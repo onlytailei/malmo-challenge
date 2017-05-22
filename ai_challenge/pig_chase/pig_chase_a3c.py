@@ -65,154 +65,152 @@ def agent_factory(name, role, clients, logger, shared_model, optimizer, args, ma
     print "Clients: ", clients
     logger.info("clients: %s, %s", clients[0], clients[1])
     if role == 0:
+        builder = PigChaseSymbolicStateBuilder()
+        env = PigChaseEnvironment(clients, builder, role=role,
+                                  randomize_positions=True)
+
+        agent = PigChaseChallengeAgent(name)
+        # NOTE: use the Focused agent to train
+        #if type(agent.current_agent) == RandomAgent:
+        #    agent_type = PigChaseEnvironment.AGENT_TYPE_1
+        #else:
+        agent_type = PigChaseEnvironment.AGENT_TYPE_2
+
+        obs = env.reset(agent_type)
+        reward = 0
+        agent_done = False
+
         while True:
-            builder = PigChaseSymbolicStateBuilder()
-            env = PigChaseEnvironment(clients, builder, role=role,
-                                      randomize_positions=True)
-
-            agent = PigChaseChallengeAgent(name)
-            # NOTE: use the Focused agent to train
-            #if type(agent.current_agent) == RandomAgent:
-            #    agent_type = PigChaseEnvironment.AGENT_TYPE_1
-            #else:
-            agent_type = PigChaseEnvironment.AGENT_TYPE_2
-
-            obs = env.reset(agent_type)
-            reward = 0
-            agent_done = False
-
-            while True:
-                try:
-                    if env.done:
-                        #if type(agent.current_agent) == RandomAgent:
-                        #    agent_type = PigChaseEnvironment.AGENT_TYPE_1
-                        #else:
-                        agent_type = PigChaseEnvironment.AGENT_TYPE_2
+            try:
+                if env.done:
+                    #if type(agent.current_agent) == RandomAgent:
+                    #    agent_type = PigChaseEnvironment.AGENT_TYPE_1
+                    #else:
+                    agent_type = PigChaseEnvironment.AGENT_TYPE_2
+                    obs = env.reset(agent_type)
+                    while obs is None:
+                        # this can happen if the episode ended with the first
+                        # action of the other agent
+                        print('Warning: received obs == None.')
                         obs = env.reset(agent_type)
-                        while obs is None:
-                            # this can happen if the episode ended with the first
-                            # action of the other agent
-                            print('Warning: received obs == None.')
-                            obs = env.reset(agent_type)
 
-                    action = agent.act(obs, reward, agent_done, is_training=True)
-                    obs, reward, agent_done = env.do(action)
-                except Exception:
-                    break
+                action = agent.act(obs, reward, agent_done, is_training=True)
+                obs, reward, agent_done = env.do(action)
+            except Exception:
+                break
     else:
-        while True:
-            env = PigChaseEnvironment(clients, 
-                    PigChaseTopDownStateBuilder4_channel(True),
-                    role=role, 
-                    randomize_positions=True)
-            
-            model = ActorCritic(4,3) # env state channel and action space
-            model.train() 
-             
+        env = PigChaseEnvironment(clients, 
+                PigChaseTopDownStateBuilder4_channel(True),
+                role=role, 
+                randomize_positions=True)
+        
+        model = ActorCritic(4,3) # env state channel and action space
+        model.train() 
+         
+        state_ = env.reset()
+        while state_ is None:
+            # this can happen if the episode 
+            # ended with the first
+            # action of the other agent
+            logger.info('Warning: received obs==None.')
             state_ = env.reset()
-            while state_ is None:
-                # this can happen if the episode 
-                # ended with the first
-                # action of the other agent
-                logger.info('Warning: received obs==None.')
-                state_ = env.reset()
-            state_ = state_.reshape(1,5,18,18)
-            state = torch.from_numpy(state_[:1,1:,2:-2,2:-2])
-            done = True
-            
-            episode_length = 0
-            loss_history = []
-            win = None
-            img_win = None
-            while True:
-                try:
-                    episode_length += 1
-                    model.load_state_dict(shared_model.state_dict())
-                     
-                    if done:
-                        cx = Variable(torch.zeros(1, 256))
-                        hx = Variable(torch.zeros(1, 256))
-                    else: 
-                        cx = Variable(cx.data)
-                        hx = Variable(hx.data)
-                    
-                    values = []
-                    log_probs = []
-                    rewards = []
-                    entropies = []
-                        
-                    for step in range(args.num_steps):
-                        if vis != None:
-                            img_win = image_visual(vis, state_, win=img_win)
-                        value, logit, (hx, cx) = model(
-                            (Variable(state), (hx, cx)))
-                        prob = F.softmax(logit)
-                        log_prob = F.log_softmax(logit)
-                        entropy = -(log_prob * prob).sum(1)
-                        entropies.append(entropy)
-
-                        action = prob.multinomial().data
-                        log_prob = log_prob.gather(1, Variable(action))
-                        state_, reward, done = env.do(action.numpy()[0][0])
-                        
-                        #done = done or episode_length >= args.max_episode_length
-                        #reward = max(min(reward, 1), -1)
-
-                        if done:
-                            episode_length = 0
-                            state_ = env.reset()
-                            while state_ is None:
-                                # this can happen if the episode 
-                                # ended with the first
-                                # action of the other agent
-                                logger.info('Warning: received obs==None.')
-                                state_ = env.reset()
-
-                        state_ = state_.reshape(1,5,18,18)
-                        state = torch.from_numpy(state_[:1,1:,2:-2,2:-2])
-                        values.append(value)
-                        log_probs.append(log_prob)
-                        rewards.append(reward)
-
-                        if done:
-                            break
+        state_ = state_.reshape(1,5,18,18)
+        state = torch.from_numpy(state_[:1,1:,2:-2,2:-2])
+        done = True
+        
+        episode_length = 0
+        loss_history = []
+        win = None
+        img_win = None
+        while True:
+            try:
+                episode_length += 1
+                model.load_state_dict(shared_model.state_dict())
+                 
+                if done:
+                    cx = Variable(torch.zeros(1, 256))
+                    hx = Variable(torch.zeros(1, 256))
+                else: 
+                    cx = Variable(cx.data)
+                    hx = Variable(hx.data)
                 
-                    R = torch.zeros(1, 1)
-                    if not done:
-                        value, _, _ = model((Variable(state), (hx, cx)))
-                        R = value.data
-
-                    values.append(Variable(R))
-                    policy_loss = 0
-                    value_loss = 0
-                    R = Variable(R)
-                    gae = torch.zeros(1, 1)
-                    for i in reversed(range(len(rewards))):
-                        R = args.gamma * R + rewards[i]
-                        advantage = R - values[i]
-                        value_loss = value_loss + 0.5 * advantage.pow(2)
-
-                        # Generalized Advantage Estimataion
-                        delta_t = rewards[i] + args.gamma * \
-                            values[i + 1].data - values[i].data
-                        gae = gae * args.gamma + delta_t
-
-                        policy_loss = policy_loss - \
-                            log_probs[i] * Variable(gae) - 0.01 * entropies[i]
-
-                    optimizer.zero_grad()
-
-                    loss = policy_loss + 0.5 * value_loss
-                    loss.backward()
-                    torch.nn.utils.clip_grad_norm(model.parameters(), 40)
-                    loss_history.append(loss.data.numpy())
+                values = []
+                log_probs = []
+                rewards = []
+                entropies = []
+                    
+                for step in range(args.num_steps):
                     if vis != None:
-                        win = loss_visual(vis, loss_history, main_step, win)
-                    ensure_shared_grads(model, shared_model)
-                    optimizer.step()
-                    main_step.value +=1
-                except Exception:
-                    break
+                        img_win = image_visual(vis, state_, win=img_win)
+                    value, logit, (hx, cx) = model(
+                        (Variable(state), (hx, cx)))
+                    prob = F.softmax(logit)
+                    log_prob = F.log_softmax(logit)
+                    entropy = -(log_prob * prob).sum(1)
+                    entropies.append(entropy)
+
+                    action = prob.multinomial().data
+                    log_prob = log_prob.gather(1, Variable(action))
+                    state_, reward, done = env.do(action.numpy()[0][0])
+                    
+                    #done = done or episode_length >= args.max_episode_length
+                    #reward = max(min(reward, 1), -1)
+
+                    if done:
+                        episode_length = 0
+                        state_ = env.reset()
+                        while state_ is None:
+                            # this can happen if the episode 
+                            # ended with the first
+                            # action of the other agent
+                            logger.info('Warning: received obs==None.')
+                            state_ = env.reset()
+
+                    state_ = state_.reshape(1,5,18,18)
+                    state = torch.from_numpy(state_[:1,1:,2:-2,2:-2])
+                    values.append(value)
+                    log_probs.append(log_prob)
+                    rewards.append(reward)
+
+                    if done:
+                        break
+            
+                R = torch.zeros(1, 1)
+                if not done:
+                    value, _, _ = model((Variable(state), (hx, cx)))
+                    R = value.data
+
+                values.append(Variable(R))
+                policy_loss = 0
+                value_loss = 0
+                R = Variable(R)
+                gae = torch.zeros(1, 1)
+                for i in reversed(range(len(rewards))):
+                    R = args.gamma * R + rewards[i]
+                    advantage = R - values[i]
+                    value_loss = value_loss + 0.5 * advantage.pow(2)
+
+                    # Generalized Advantage Estimataion
+                    delta_t = rewards[i] + args.gamma * \
+                        values[i + 1].data - values[i].data
+                    gae = gae * args.gamma + delta_t
+
+                    policy_loss = policy_loss - \
+                        log_probs[i] * Variable(gae) - 0.01 * entropies[i]
+
+                optimizer.zero_grad()
+
+                loss = policy_loss + 0.5 * value_loss
+                loss.backward()
+                torch.nn.utils.clip_grad_norm(model.parameters(), 40)
+                loss_history.append(loss.data.numpy())
+                if vis != None:
+                    win = loss_visual(vis, loss_history, main_step, win)
+                ensure_shared_grads(model, shared_model)
+                optimizer.step()
+                main_step.value +=1
+            except Exception:
+                break
 
 def loss_visual(vis, loss_history, main_step, win):
     if main_step.value > 200:
