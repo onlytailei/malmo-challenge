@@ -32,9 +32,9 @@ class MalmoEnv(Env):
         print (self.clients)
         
         #oppenent agent
-        oppenent_thread = mp.Process(target=self._opponent_env, kwargs={'pid':env_ind})
-        oppenent_thread.daemon=True
-        oppenent_thread.start()
+        self.oppenent_thread = mp.Process(target=self._opponent_env, kwargs={'pid':env_ind})
+        self.oppenent_thread.daemon=True
+        self.oppenent_thread.start()
         sleep(1)
         
         # TODO
@@ -52,6 +52,9 @@ class MalmoEnv(Env):
         self.logger.warning("State  Space: %s", self.state_shape)
         print ("init over")
     
+    def __del__(self):
+        self.oppenent_thread.terminate()
+
     @property
     def action_dim(self):
         return self.env.available_actions
