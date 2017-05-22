@@ -64,7 +64,6 @@ def agent_factory(name, role, clients, logger, shared_model, optimizer, args, ma
     clients = parse_clients_args(clients)
     print "Clients: ", clients
     logger.info("clients: %s, %s", clients[0], clients[1])
-    # parterner 
     if role == 0:
         while True:
             builder = PigChaseSymbolicStateBuilder()
@@ -72,6 +71,7 @@ def agent_factory(name, role, clients, logger, shared_model, optimizer, args, ma
                                       randomize_positions=True)
 
             agent = PigChaseChallengeAgent(name)
+            # NOTE: use the Focused agent to train
             #if type(agent.current_agent) == RandomAgent:
             #    agent_type = PigChaseEnvironment.AGENT_TYPE_1
             #else:
@@ -95,9 +95,7 @@ def agent_factory(name, role, clients, logger, shared_model, optimizer, args, ma
                             print('Warning: received obs == None.')
                             obs = env.reset(agent_type)
 
-                    # select an action
                     action = agent.act(obs, reward, agent_done, is_training=True)
-                    # take a step
                     obs, reward, agent_done = env.do(action)
                 except Exception:
                     break
@@ -118,12 +116,10 @@ def agent_factory(name, role, clients, logger, shared_model, optimizer, args, ma
                 # action of the other agent
                 logger.info('Warning: received obs==None.')
                 state_ = env.reset()
-            #logger.info("state, %s", state_[:,:10,:10]) 
             state_ = state_.reshape(1,5,18,18)
             state = torch.from_numpy(state_[:1,1:,2:-2,2:-2])
             done = True
             
-            #max_training_steps = EPOCH_SIZE
             episode_length = 0
             loss_history = []
             win = None
@@ -158,8 +154,7 @@ def agent_factory(name, role, clients, logger, shared_model, optimizer, args, ma
                         action = prob.multinomial().data
                         log_prob = log_prob.gather(1, Variable(action))
                         state_, reward, done = env.do(action.numpy()[0][0])
-                        #logger.info("state: %s", state_)
-                        #state_ = state_.reshape(1,5,18,18)
+                        
                         #done = done or episode_length >= args.max_episode_length
                         #reward = max(min(reward, 1), -1)
 
@@ -218,6 +213,7 @@ def agent_factory(name, role, clients, logger, shared_model, optimizer, args, ma
                     main_step.value +=1
                 except Exception:
                     break
+
 def loss_visual(vis, loss_history, main_step, win):
     if main_step.value > 200:
         Y_ = np.array(loss_history).reshape(-1,1)
@@ -240,15 +236,10 @@ def ensure_shared_grads(model, shared_model):
 def test_process(model, step, logger):
     start_time = time.time()
     while True:
-        #logger.info("test step value: %d", step.value)
-        #if step.value%500==0:
-        #    torch.save(model.state_dict(), '/root/malmo_save/'+str(step.value)+'_weight')
-        #    logger.info("save model in step %d", step.value)
-        #    sleep(10)
+        #   save the model weight every 17 minutes
         if int(time.time()-start_time)%(17*60)==0:
             torch.save(model.state_dict(), '/root/malmo_save/'+str(step.value)+'_weight')
             torch.save(model.state_dict(), '/root/malmo_save/newest_weight')
-       #     logger.info("save model in step %d", step.value)
             sleep(10)
 
 def run_experiment(agents_def):
@@ -270,8 +261,7 @@ def run_experiment(agents_def):
     for agent in agents_def:
         agent['optimizer'] = optimizer
         agent['shared_model'] = shared_model
-        #agent['vis'] = None
-        agent['vis'] = None
+        agent['vis'] = None   # vis | None : to visualize the training result or not
         agent['main_step'] = main_step
         
         p = mp.Process(target=agent_factory, kwargs=agent)

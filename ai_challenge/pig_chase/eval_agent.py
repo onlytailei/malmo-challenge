@@ -13,12 +13,12 @@ import numpy as np
 from environment import PigChaseTopDownStateBuilder4_channel
 from evaluation import PigChaseEvaluator
 
-class My100kAgent():
+class MyTrainedAgent():
     
-    def __init__(self):
+    def __init__(self, weight_path):
         
         self.model = ActorCritic(4,3)
-        self.model.load_state_dict(torch.load('/root/save/newest_weight'))
+        self.model.load_state_dict(torch.load(weight_path))
         self.cx = Variable(torch.zeros(1, 256))
         self.hx = Variable(torch.zeros(1, 256))
 
@@ -38,10 +38,10 @@ class My100kAgent():
 
 
 # Creates an agent trained with 100k train calls
-my_agent_100k = My100kAgent()
+my_agent_100k = MyTrainedAgent('/root/malmo-challenge/ai_challenge/pig_chase/weight_100k')
 
 # Creates an agent trained with 500k train calls
-my_agent_500k = My100kAgent()
+my_agent_500k = MyTrainedAgent('/root/malmo-challenge/ai_challenge/pig_chase/weight_500k')
 
 # You can pass a custom StateBuilder for your agent.
 # It will be used by the environment to generate state for your agent
@@ -49,4 +49,4 @@ eval = PigChaseEvaluator([['malmo1','10000'], ['malmo2','10000']],my_agent_100k,
 
 # Run and save
 eval.run()
-eval.save('My experiment 1', '/root/save/result_final')
+eval.save('My experiment 1', '/root/malmo_save/second_result')
