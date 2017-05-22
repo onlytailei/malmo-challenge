@@ -14,18 +14,20 @@ We want to train our agent in an end-to-end fashion without any hand-crafted fea
 * **Implementation Details**:
 We use the symbolic view as input to the network, with a little bit of preprocessing: we cut off the borders of the symbolic view since they provide no useful information for the agent, then one symbolic view is fed into the network as a 4-channel image: one for all the objects in the environment, one to indicate the position of the pig, then one for each of the two agents.
 
-<img src="./network.png" alt="Drawing" style="width: 60px;"/>
+The overall architecture of our network is shown below:
+<img src="./network.png" alt="Drawing" style="width: 600px;" align="middle"/>
 
 ## Novel Points
 * **Training over multiple machines with docker**:
 As an asynchronous deep reinforcement learning method, A3C needs to train tens of different training processes at the same time, so as the break the temporal correlation in the data. With an efficient forward accumulation of the rewards, this method shows a progressive result in gym tasks running purely on CPU. As a relatively computational expensive simulation environment, it is impossible to start tens of malmo training processes on one machine (every training process contains two Minecraft environments). Therefore, the swarm mode of docker provides an efficient way to build such a distributed training system, and it can balance the source usage between different swarm nodes. In order to solve the pig-chase task with A3C, we start 16 training process with 32 Minecraft environments in docker swarm mode and distribute the training over 3 CPU servers. The training process can communicate with all of the Minecraft environments effectively in the docker network.
 
-<img src="./docker.png" alt="Drawing" style="width: 60px;"/>
+This distributed training of A3C is shown in the figure below:
+<img src="./docker.png" alt="Drawing" style="width: 600px;"/>
 
-* **Curriculum Learning**
+* **Curriculum Learning**:
 After training a vanilla A3C agent on the malmo challenge, we found that the agent tended to go to the exit directly to get the small reward instead of trying to find a way to cooperate with its opponent and catch the pig. We suspect that this is due to the probability for the latter scenario to happen is relatively small, so the agent would have too few such examples to learn sufficiently how to get the big reward for catching the pig. This observation inspired us to utilize curriculum learning in the training of our agent, in the belief that it would be much more probable for the agent to learn the optimal behavior if it starts from relatively simple tasks (by simple here we mean that the probability for the agent to catch the pig is higher) then gradually transits to more difficult tasks [[3]](http://dl.acm.org/citation.cfm?id=1553380). We thus modify our training procedure such that in the beginning of the training, the opponent would always be executing A* actions, so the probability that our agent and the opponent could catch the pig together would be higher. The probability that the opponent is a ``RandomAgent`` instead of a ``FocusedAgent`` is linearly annealed from ``0`` to ``0.75`` (0.75 is the original setting in the malmo challenge). This gives us a big performance gain even though we have only trained this paradigm for a relatively small number of iterations; we believe this training procedure can result in much better performance if we have trained it for more iterations.
-* Periodical Fine-tuning
-> One thing we notice is that the malmo environment is relatively unstable when running on remote clusters: we start 16 pig_chase training processes, which contain 32 malmo environments in total, then many of two environments in the same training process stop to communicate with each other in about 20 minutes. Thus our solution is to restart a new training instance every 20 minutes, by fine-tuning from the model saved from the last training instance.
+* **Periodical Fine-tuning**:
+One thing we notice is that the malmo environment is relatively unstable when running on remote clusters: we start 16 pig_chase training processes, which contain 32 malmo environments in total, then many of two environments in the same training process stop to communicate with each other in about 20 minutes. Thus our solution is to restart a new training instance every 20 minutes, by fine-tuning from the model saved from the last training instance.
 
 
 
