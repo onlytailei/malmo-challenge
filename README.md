@@ -33,29 +33,29 @@ Our final evaluation result is here: ``https://github.com/jingweiz/malmo-challen
 
 ## How to reproduce the result
 ### Training environment configuration
-We train our model with 3 CPU servers. Firstly we build a docker swarm with docker swarm mode and let all of these three CPU servers join this docker swarm. We build a docker 
-In manager node
+We train our model with 3 CPU servers. Firstly we build a docker swarm with docker swarm mode and let all of these three CPU servers join this docker swarm. We build a docker:
+In manager node:
 ```
 docker swarm init --advertise-addr <MANAGER node ip>
 ```
-In worker node
+In worker node:
 ```
 docker swarm join \
   --token SWMTKN-1-49nj1cmql0jkz5s954yi3oex3nedyz0fb0xx14ie39trti4wxv-8vxv8rssmk743ojnwacrr2e7c \
   <manager node ip>:<port>
 ```
-Create a docker swarm overlay network for the communications between the docker nodes.
+Create a docker swarm overlay network for the communications between the docker nodes:
 ```
 docker network create --driver overlay --subnet 10.0.9.0/24 --opt encrypted malmo_net
 ```
-Create a docker volume for models weights saving.
+Create a docker volume for models weights saving:
 ```
 docker volume create malmo_volume
 ```
 Build the training docker image. You can find the Dockerfile for _onlytailei:malmo:latest_ and _onlytailei/malmopy-pytorch-cpu:latest_ in [Dockerfile](https://github.com/onlytailei/malmo-challenge/blob/master/docker/malmo/Dockerfile) and [Dockerfile](https://github.com/onlytailei/malmo-challenge/blob/master/docker/malmopy-pytorch-cpu/Dockerfile).
 
 ### Training
-Then in worker node of docker swarm, start the docker-compose file using docker stack
+Then in the worker node of docker swarm, start the docker-compose file using docker stack:
 ```
 docker stack deploy --compose-file=docker/malmopy-ai-challenge/docker-compose.yml malmo_stack
 ```
@@ -63,7 +63,7 @@ The main training code is in _[pig_chase_a3c.py](https://github.com/onlytailei/m
 
 The weights are saved every 17 mins. They are saved in the created docker volume _malmo_volume_. We can run an arbitrary image with this volume to copy the weights to local.
 
-For periodical finetuning, directly run this script
+For periodical fine-tuning, directly run this script:
 ```
 malmo_loop.sh
 ```
