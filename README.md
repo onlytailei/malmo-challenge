@@ -53,8 +53,13 @@ Create a docker volume for models weights saving.
 ```
 docker volume create malmo_volume
 ```
-Build the training docker image. You can find the **Dockerfile** for onlytailei:malmo:latest and onlytailei/malmopy-pytorch-cpu:latest in [Dockerfile](https://github.com/onlytailei/malmo-challenge/blob/master/docker/malmo/Dockerfile) and [Dockerfile](https://github.com/onlytailei/malmo-challenge/blob/master/docker/malmopy-pytorch-cpu/Dockerfile).
+Build the training docker image. You can find the Dockerfile for _onlytailei:malmo:latest_ and _onlytailei/malmopy-pytorch-cpu:latest_ in [Dockerfile](https://github.com/onlytailei/malmo-challenge/blob/master/docker/malmo/Dockerfile) and [Dockerfile](https://github.com/onlytailei/malmo-challenge/blob/master/docker/malmopy-pytorch-cpu/Dockerfile).
 
+### Training
+Then in worker node of docker swarm, start the docker-compose file using docker stack
+```
+docker stack deploy --compose-file=docker/malmopy-ai-challenge/docker-compose.yml malmo_stack
+```
 
 *******
 # Video
