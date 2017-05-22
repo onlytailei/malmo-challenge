@@ -269,4 +269,4 @@ __pycache__/
 # Library
 *.pyd
 
-ai_challeng/pig_chase/pytorch_rl/*
+ai_challenge/pig_chase/pytorch_rl/*

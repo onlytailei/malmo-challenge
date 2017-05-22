@@ -277,7 +277,7 @@ services:
     image: onlytailei/malmopy-pytorch-cpu:latest
     volumes: 
       - /home/tai/malmo_tai/malmo-challenge:/root/malmo-challenge
-      - malmo_volume:/root/malmo_save
+      - malmo_save:/root/malmo_save
     working_dir: /root/malmo-challenge/ai_challenge/pig_chase
     entrypoint: /bin/bash
     command: /root/malmo-challenge/ai_challenge/pig_chase/start.sh
@@ -294,5 +294,5 @@ networks:
   malmo_net:
     external: true
 volumes:
-  malmo_volume:
+  malmo_save:
     external: true
