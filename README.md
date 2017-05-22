@@ -16,13 +16,13 @@ This is **bacon-reloaded**:P Here's our summary for our work for [**The Malmo Co
 
 ## Novel Points
 * Training over multiple machines with docker
-> pass
+> As an asynchronous deep reinforcement learning method, A3C needs to train tens of different training processes at same time. With a efficient forward accumulation of the rewards, this methods show a progressive result in gym tasks without depending on GPU. As a source-comsuming simulation environment, it is imposible to start tens of malmo training process in one machine (every process with 2 Minecraft environments). Therefor, ocker swarm mode provides an efficient way to build such a distributed system. Docker can balance the source usage between diffierent swarm nodes. In this project, to train malmo pig-chase with A3C, we started 16 training process with 32 Minecraft environments in the docker swarm we created with 3 CPU servers. The training process can communicate with all of the Minecraft environments effectively in the docker network.
+
 * Curriculum Learning
 > After training a vanilla A3C agent on the malmo challenge, we found that the agent is tended to go to the exit directly and get the small reward instead of trying to find a way to coorperate with its opponent and catch the pig. We suspect that this is due to the probability for the latter scenario to happen is relatively small, so the agent would have too few such examples to learn sufficiently how to get the big reward for catching the pig. This observation inspired us to utilize currilum learning in the training of our agent, in the belief that it would be much more probable for the agent to learn the optimal behavior if it starts from relatively simple tasks (by simple we mean that the probability for the agent to catch the pig is higher) then gradually transits to more difficult tasks [[3]](http://dl.acm.org/citation.cfm?id=1553380). We thus modify our training procedure so that in the beginning of the training, the opponent would always be executing A* actions, so the probability that our agent and the opponent could catch the pig together would be higher. The probability that the opponent is a ``RandomAgent`` instead of an ``AStarAgent`` is linearly annealed from ``0`` to ``0.75`` (which is the original setting in the malmo challenge). This gives us a big performance gain even though we have only trained this paradigm for (one day???) iterations; we believe this training procedure can result in much better performance if we have trained it for more iterations.
 * Periodical Finetuning
 > One thing we notice is that the malmo environment is relatively unstable when running on remote clusters: we start 8 malmo environments (2 malmo agents each) then many of them stop to communicate ......... in about 10 minutes. Thus our solution is to restart a new training instance every 10 minutes, by finetuning from the model saved from the last training instance.
 
-> A3C multiprocess in Docker
 
 
 *******
@@ -62,9 +62,10 @@ docker stack deploy --compose-file=docker/malmopy-ai-challenge/docker-compose.ym
 ```
 The main training code is in _[pig_chase_a3c.py](https://github.com/onlytailei/malmo-challenge/blob/master/ai_challenge/pig_chase/pig_chase_a3c.py)_
 
-The weights are saved every 17 mins. They are saved in the created docker volume. We can run an arbitrary image with this volume to copy the weights to local.
+The weights are saved every 17 mins. They are saved in the created docker volume _malmo_volume_. We can run an arbitrary image with this volume to copy the weights to local.
 
 ### Evaluation
+Evaluation is also implemented in docker. The result json will be saved in docker volume _malmo_volume_
 ```
 cd docker/malmopy-eval
 docker-compose up
