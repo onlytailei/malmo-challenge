@@ -1,0 +1,86 @@
+# Copyright (c) 2017 Microsoft Corporation.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+# documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+#  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
+# and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+# the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+# THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+#  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+# ===================================================================================================================
+
+version: '3'
+services:
+  malmo1:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net_local
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+  malmo2:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net_local
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+  malmo3:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net_local
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+  malmo4:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net_local
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+  #malmo3:
+    #image: malmo:latest
+    #networks:
+      #- malmo_net
+  #malmo4:
+    #image: malmo:latest
+    #networks:
+      #- malmo_net
+  agents:
+    image: onlytailei/malmopy-pytorch-cpu:latest
+    volumes: 
+      - /home/tai/malmo_tai/malmo-challenge:/root/malmo-challenge
+      - malmo_model:/root/malmo-challenge/ai_challenge/pig_chase/pytorch_rl/models
+      - malmo_log:/root/malmo-challenge/ai_challenge/pig_chase/pytorch_rl/logs
+    working_dir: /root/malmo-challenge/ai_challenge/pig_chase/pytorch_rl
+    entrypoint: /bin/bash
+    command: /root/malmo-challenge/ai_challenge/pig_chase/pytorch_rl/start_local.sh
+    ports:
+      - "8097:8097"
+    networks:
+      - malmo_net_local
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+
+networks:
+  malmo_net_local:
+    external: true
+
+volumes:
+  malmo_model:
+    external: true
+  malmo_log:
+    external: true
