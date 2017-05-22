@@ -49,11 +49,11 @@ Create a docker swarm overlay network for the communications between the docker 
 ```
 docker network create --driver overlay --subnet 10.0.9.0/24 --opt encrypted malmo_net
 ```
-Create a docker volume for models weights saving
+Create a docker volume for models weights saving.
 ```
 docker volume create malmo_volume
 ```
-Build the training docker image.
+Build the training docker image. You can find the **Dockerfile** for onlytailei:malmo:latest and onlytailei/malmopy-pytorch-cpu:latest in [Dockerfile](https://github.com/onlytailei/malmo-challenge/blob/master/docker/malmo/Dockerfile) and [Dockerfile](https://github.com/onlytailei/malmo-challenge/blob/master/docker/malmopy-pytorch-cpu/Dockerfile).
 
 
 *******
