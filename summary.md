@@ -1,6 +1,6 @@
 # **bacon-reloaded**
 
-This is **bacon-reloaded**! Here's our summary for our work for **The Malmo Collaborative AI Challenge**
+This is **bacon-reloaded**:P Here's our summary for our work for [**The Malmo Collaborative AI Challenge**](https://www.microsoft.com/en-us/research/academic-program/collaborative-ai-challenge/#).
 
 ## Approach
 * Asynchronous Advantage Actor-Critic (A3C) with Generalized Advantage Estimation (GAE)
