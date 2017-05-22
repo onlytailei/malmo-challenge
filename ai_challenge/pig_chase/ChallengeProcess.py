@@ -19,6 +19,49 @@ from malmopy.agent import RandomAgent
 from agent import PigChaseChallengeAgent
 from environment import PigChaseEnvironment, PigChaseSymbolicStateBuilder, PigChaseTopDownStateBuilder,PigChaseTopDownStateBuilder4_channel
 
+def _opponent_env(clients, pid):
+    print ("Oppenent Start") 
+    # TODO define clients as process id 
+    builder = PigChaseSymbolicStateBuilder()
+    
+    env = PigChaseEnvironment(clients,        
+            builder, 
+            role= 0,
+            randomize_positions=True)
+    
+    agent = PigChaseChallengeAgent('Agent_1')
+    env.reset()
+    print ("Oppenent env and agent") 
+    
+    if type(agent.current_agent) == RandomAgent:
+        agent_type = PigChaseEnvironment.AGENT_TYPE_1
+    else:
+        agent_type = PigChaseEnvironment.AGENT_TYPE_2
+
+    obs = env.reset(agent_type)
+    print (obs)
+    reward = 0
+    agent_done = False
+    print ("Oppenent initial_over") 
+
+    while True:
+        if env.done:
+            print ("Oppenent Done") 
+            if type(agent.current_agent) == RandomAgent:
+                agent_type = PigChaseEnvironment.AGENT_TYPE_1
+            else:
+                agent_type = PigChaseEnvironment.AGENT_TYPE_2
+            
+            obs = env.reset(agent_type)
+            while obs is None:
+                print ('Warning: received obs == None.')
+                obs = env.reset(agent_type)
+
+        # select an action
+        action = agent.act(obs, reward, agent_done, is_training=True)
+        # take a step
+        obs, reward, agent_done = env.do(action)
+
 
 class MalmoEnv(Env):
     def __init__(self, args, env_ind=0):
@@ -30,7 +73,7 @@ class MalmoEnv(Env):
         print (self.clients)
         
         #oppenent agent
-        self.oppenent_thread = mp.Process(target=self._opponent_env, kwargs={'pid':env_ind})
+        self.oppenent_thread = Thread(target=_opponent_env, kwargs={'clients':self.clients, 'pid':env_ind})
         self.oppenent_thread.daemon=True
         self.oppenent_thread.start()
         sleep(1)
