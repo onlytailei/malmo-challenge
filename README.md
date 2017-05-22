@@ -60,6 +60,15 @@ Then in worker node of docker swarm, start the docker-compose file using docker 
 ```
 docker stack deploy --compose-file=docker/malmopy-ai-challenge/docker-compose.yml malmo_stack
 ```
+The main training code is in _[pig_chase_a3c.py](https://github.com/onlytailei/malmo-challenge/blob/master/ai_challenge/pig_chase/pig_chase_a3c.py)_
+
+The weights are saved every 17 mins. They are saved in the created docker volume. We can run an arbitrary image with this volume to copy the weights to local.
+
+### Evaluation
+```
+cd docker/malmopy-eval
+docker-compose up
+```
 
 *******
 # Video
