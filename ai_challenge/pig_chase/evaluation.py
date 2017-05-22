@@ -70,11 +70,12 @@ class PigChaseEvaluator(object):
         try:
             filepath = abspath(filepath)
             parent = join(pardir, filepath)
-            if not exists(parent):
-                makedirs(parent)
+            #if not exists(parent):
+                #makedirs(parent)
 
             with open(filepath, 'w') as f_out:
                 dump(metrics, f_out)
+            
 
             print('==================================')
             print('Evaluation done, results written at %s' % filepath)
