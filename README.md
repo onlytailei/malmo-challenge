@@ -5,7 +5,7 @@
 This is **bacon-reloaded**:P Here's our summary for our work for [**The Malmo Collaborative AI Challenge**](https://www.microsoft.com/en-us/research/academic-program/collaborative-ai-challenge/#).
 
 *******
-## Summary
+# Summary
 
 ## Approach
 * Asynchronous Advantage Actor-Critic (A3C) with Generalized Advantage Estimation (GAE)
@@ -25,16 +25,22 @@ This is **bacon-reloaded**:P Here's our summary for our work for [**The Malmo Co
 > A3C multiprocess in Docker
 
 
-## Evaluation Results
-
-
-## Video
-
+*******
+# Evaluation Results
+Our final evaluation result is here: ``https://github.com/jingweiz/malmo-challenge/blob/master/ai_challenge/pig_chase/final_result.json``
+```
+{"500k": {"var": 18.835718608113272, "count": 519, "mean": 0.50481695568400775}, "100k": {"var": 3.4812551696770671, "count": 2158, "mean": -0.85171455050973122}, "experimentname": "My experiment 2"}
+```
 
 ## How to reproduce the result
 
+*******
+# Video
+We generate a video showing the performance of our agent, which can be found [here](https://youtu.be/_lWTLc9VH1E).
 
-## References:
+
+*******
+# References:
 * [1] [Asynchronous Methods for Deep Reinforcement Learning] (https://arxiv.org/abs/1602.01783)
 * [2] [High-Dimensional Continuous Control Using Generalized Advantage Estimation] (https://arxiv.org/abs/1506.02438)
 * [3] [Curriculum learning] (http://dl.acm.org/citation.cfm?id=1553380)
