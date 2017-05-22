@@ -6,7 +6,7 @@ We are **bacon-reloaded** (Jingwei Zhang @jingweiz, Lei Tai @onlytailei, Alexand
 
 *******
 # Summary
-
+[summary.pdf](https://drive.google.com/file/d/0Bz6_GtsnLN8zX0VQYlQ2Y0p5R3M/view)
 ## Approach
 * **Asynchronous Advantage Actor-Critic (A3C) with Generalized Advantage Estimation (GAE)**:
 We want to train our agent in an end-to-end fashion without any hand-crafted features, so we choose to solve this task using deep reinforcement learning. We implemented A3C [[1]](https://arxiv.org/abs/1602.01783) along with GAE [[2]](https://arxiv.org/abs/1506.02438) to train our agent. We choose to use A3C mainly due to the observation that the data is relatively expensive to collect from the malmo environment, thus we want to be able to collect experiences over multiple machines. The asynchronous nature of A3C meets this requirement.
