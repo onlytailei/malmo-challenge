@@ -1,7 +1,7 @@
 #!/bin/bash
 
 start_time=$(date +%s)
-cd /home/tai/malmo_tai/malmo-challenge/docker/malmopy-ai-challenge
+cd ./malmo-challenge/docker/malmopy-ai-challenge
 docker stack deploy --compose-file=docker-compose.yml malmo_stack
 
 while true
