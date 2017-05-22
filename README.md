@@ -33,7 +33,7 @@ Our final evaluation result is here: ``https://github.com/jingweiz/malmo-challen
 ```
 
 ## How to reproduce the result
-### Environment configuration
+### Training environment configuration
 We train our model with 3 CPU servers. Firstly we build a docker swarm with docker swarm mode and let all of these three CPU servers join this docker swarm. We build a docker 
 In manager node
 ```
@@ -45,11 +45,15 @@ docker swarm join \
   --token SWMTKN-1-49nj1cmql0jkz5s954yi3oex3nedyz0fb0xx14ie39trti4wxv-8vxv8rssmk743ojnwacrr2e7c \
   <manager node ip>:<port>
 ```
-We creat a docker swarm overlay network for the communications between the docker nodes.
+Create a docker swarm overlay network for the communications between the docker nodes.
 ```
 docker network create --driver overlay --subnet 10.0.9.0/24 --opt encrypted malmo_net
 ```
-
+Create a docker volume for models weights saving
+```
+docker volume create malmo_volume
+```
+Build the training docker image.
 
 
 *******
