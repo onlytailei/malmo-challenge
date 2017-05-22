@@ -1,0 +1,3 @@
+[submodule "ai_challenge/pig_chase/pytorch-rl"]
+	path = ai_challenge/pig_chase/pytorch-rl
+	url = git@github.com:onlytailei/pytorch-rl.git

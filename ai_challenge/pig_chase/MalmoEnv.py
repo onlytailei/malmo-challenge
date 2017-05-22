@@ -6,7 +6,7 @@ Date:So 21 Mai 2017 12:10:07 CEST
 Info:
     '''
 import sys
-sys.path.append('./pytorch_rl/')
+sys.path.append('./pytorch-rl/')
 
 from threading import Thread, active_count
 import thread
