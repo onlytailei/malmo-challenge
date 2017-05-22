@@ -6,7 +6,7 @@
 *.user
 *.userosscache
 *.sln.docstates
-
+/malmopy.egg-info/*
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
@@ -265,3 +265,6 @@ __pycache__/
 
 # Library
 *.pyd
+
+ai_challenge/pig_chase/pytorch_rl/*
+ai_challenge/pig_chase/pytorch_rl

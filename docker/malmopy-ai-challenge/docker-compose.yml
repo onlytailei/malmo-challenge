@@ -18,19 +18,281 @@
 version: '3'
 services:
   malmo1:
-    image: malmo:latest
-    expose:
-      - "10000"
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu5
   malmo2:
-      image: malmo:latest
-      expose:
-        - "10000"
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu5
+  malmo3:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu5
+  malmo4:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu5
+  malmo5:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu5
+  malmo6:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu5
+  malmo7:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu5
+  malmo8:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu5
+  malmo9:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu5
+  malmo10:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu5
+  malmo11:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu5
+  malmo12:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu5
+  malmo13:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu4
+  malmo14:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu4
+  malmo15:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu4
+  malmo16:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu4
+  malmo17:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu4
+  malmo18:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu4
+  malmo19:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu4
+  malmo20:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu4
+  malmo21:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu3
+  malmo22:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu3
+  malmo23:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu3
+  malmo24:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu3
+  malmo25:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu3
+  malmo26:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu3
+  malmo27:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu3
+  malmo28:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu3
+  malmo29:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu3
+  malmo30:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu3
+  malmo31:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu3
+  malmo32:
+    image: onlytailei/malmo:latest
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == aiscpu3
   agents:
-      image: malmopy-cntk-cpu-py27:latest
-      working_dir: /root/malmopy/ai_challenge/pig_chase
-      command: python pig_chase_baseline.py malmo1:10000 malmo2:10000
-      ports:
-        - "6006:6006"
-      links:
-        - malmo1
-        - malmo2
+    image: onlytailei/malmopy-pytorch-cpu:latest
+    volumes: 
+      - /home/tai/malmo_tai/malmo-challenge:/root/malmo-challenge
+      - malmo_volume:/root/malmo_save
+    working_dir: /root/malmo-challenge/ai_challenge/pig_chase
+    entrypoint: /bin/bash
+    command: /root/malmo-challenge/ai_challenge/pig_chase/start.sh
+    ports:
+      - "8097:8097"
+    networks:
+      - malmo_net
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+
+networks:
+  malmo_net:
+    external: true
+volumes:
+  malmo_volume:
+    external: true

@@ -27,7 +27,7 @@ To familiarize yourself with the game, we recommend that you play it yourself. T
 ### Steps
 
 * Start two instances of the Malmo Client on ports `10000` and `10001`
-* `cd malmo-collab/ai_challenge/pig_chase`
+* `cd malmo-challenge/ai_challenge/pig_chase`
 * `python pig_chase_human_vs_agent.py`
 
 Wait for a few seconds for the human player interface to appear.
@@ -65,6 +65,38 @@ python pig_chase_baseline.py -t random
 ```
 
 For additional command line options, see the usage instructions: `python pig_chase_baseline.py -h`.
+
+## Evaluate your agent
+
+We provide a commodity evaluator PigChaseEvaluator, which allows you to quickly evaluate
+the performance of your agent.
+
+PigChaseEvaluator takes 2 arguments:
+- agent_100k : Your agent trained with 100k steps (100k train calls) 
+- agent_500k : Your agent trained with 500k steps (500k train calls)
+
+To evaluate your agent:
+
+``` python
+# Creates an agent trained with 100k train calls
+my_agent_100k = MyCustomAgent()
+
+# Creates an agent trained with 500k train calls
+my_agent_500k = MyCustomAgent()
+
+# You can pass a custom StateBuilder for your agent.
+# It will be used by the environment to generate state for your agent
+eval = PigChaseEvaluator(my_agent_100k, my_agent_500k, MyStateBuilder())
+
+# Run and save
+eval.run()
+eval.save('My experiment 1', 'path/to/save.json')
+```
+
+## Compare against other teams:
+
+Submit your evaluation results on the [leaderboard website](https://malmo-leaderboard.azurewebsites.net/) to compare your results against the other participants.
+
 
 ## Next steps
 

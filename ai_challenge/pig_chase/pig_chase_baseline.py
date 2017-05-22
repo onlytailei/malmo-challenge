@@ -21,6 +21,8 @@ import sys
 
 from argparse import ArgumentParser
 from datetime import datetime
+
+import six
 from os import path
 from threading import Thread, active_count
 from time import sleep
@@ -45,7 +47,8 @@ BASELINES_FOLDER = 'results/baselines/pig_chase/%s/%s'
 EPOCH_SIZE = 100
 
 
-def agent_factory(name, role, type, clients, max_epochs, logdir, visualizer):
+def agent_factory(name, role, baseline_agent, clients, max_epochs,
+                  logdir, visualizer):
 
     assert len(clients) >= 2, 'Not enough clients (need at least 2)'
     clients = parse_clients_args(clients)
@@ -57,23 +60,35 @@ def agent_factory(name, role, type, clients, max_epochs, logdir, visualizer):
     if role == 0:
         agent = PigChaseChallengeAgent(name)
 
-        obs = env.reset()
+        if type(agent.current_agent) == RandomAgent:
+            agent_type = PigChaseEnvironment.AGENT_TYPE_1
+        else:
+            agent_type = PigChaseEnvironment.AGENT_TYPE_2
+        obs = env.reset(agent_type)
+
         reward = 0
         agent_done = False
-
+        print "this process fine"
         while True:
-            if env.done:
-                obs = env.reset()
 
             # select an action
             action = agent.act(obs, reward, agent_done, is_training=True)
+
+            # reset if needed
+            if env.done:
+                if type(agent.current_agent) == RandomAgent:
+                    agent_type = PigChaseEnvironment.AGENT_TYPE_1
+                else:
+                    agent_type = PigChaseEnvironment.AGENT_TYPE_2
+                obs = env.reset(agent_type)
+
             # take a step
             obs, reward, agent_done = env.do(action)
 
 
     else:
 
-        if type == 'astar':
+        if baseline_agent == 'astar':
             agent = FocusedAgent(name, ENV_TARGET_NAMES[0])
         else:
             agent = RandomAgent(name, env.available_actions)
@@ -84,7 +99,7 @@ def agent_factory(name, role, type, clients, max_epochs, logdir, visualizer):
         viz_rewards = []
 
         max_training_steps = EPOCH_SIZE * max_epochs
-        for step in range(1, max_training_steps+1):
+        for step in six.moves.range(1, max_training_steps+1):
 
             # check if env needs reset
             if env.done:
@@ -145,7 +160,7 @@ if __name__ == '__main__':
     else:
         visualizer = ConsoleVisualizer()
 
-    agents = [{'name': agent, 'role': role, 'type': args.type,
+    agents = [{'name': agent, 'role': role, 'baseline_agent': args.type,
                'clients': args.clients, 'max_epochs': args.epochs,
                'logdir': logdir, 'visualizer': visualizer}
               for role, agent in enumerate(ENV_AGENT_NAMES)]
