@@ -20,7 +20,7 @@ services:
   malmo1:
     image: onlytailei/malmo:latest
     networks:
-      - malmo_net
+      - malmo_net_local
     deploy:
       placement:
         constraints:
@@ -28,23 +28,7 @@ services:
   malmo2:
     image: onlytailei/malmo:latest
     networks:
-      - malmo_net
-    deploy:
-      placement:
-        constraints:
-          - node.role == manager
-  malmo3:
-    image: onlytailei/malmo:latest
-    networks:
-      - malmo_net
-    deploy:
-      placement:
-        constraints:
-          - node.role == manager
-  malmo4:
-    image: onlytailei/malmo:latest
-    networks:
-      - malmo_net
+      - malmo_net_local
     deploy:
       placement:
         constraints:
@@ -61,18 +45,20 @@ services:
     image: onlytailei/malmopy-pytorch-cpu:latest
     volumes: 
       - /home/tai/malmo_tai/malmo-challenge:/root/malmo-challenge
-    working_dir: /root/malmo-challenge/ai_challenge/pig_chase/pytorch_rl
+    working_dir: /root/malmo-challenge/ai_challenge/pig_chase/
     entrypoint: /bin/bash
-    command: /root/malmo-challenge/ai_challenge/pig_chase/pytorch_rl/start_local.sh
+    command: /root/malmo-challenge/ai_challenge/pig_chase/dqn.sh
     ports:
       - "8097:8097"
     networks:
-      - malmo_net
+      - malmo_net_local
     deploy:
       placement:
         constraints:
           - node.role == manager
 
 networks:
-  malmo_net:
+  malmo_net_local:
     external: true
+
+         
