@@ -18,6 +18,10 @@ This is **bacon-reloaded**:P Here's our summary for our work for [**The Malmo Co
 
 > A3C multiprocess in Docker
 
+## Evaluation Results
+
+## Video
+
 ## How to reproduce the result
 
 ## References:
