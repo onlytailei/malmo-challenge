@@ -1,8 +1,8 @@
 # The Malmo Collaborative AI Challenge
 
-# **bacon-reloaded**
+# **Team: bacon-reloaded**
 
-This is **bacon-reloaded**:P Here's our summary for our work for [**The Malmo Collaborative AI Challenge**](https://www.microsoft.com/en-us/research/academic-program/collaborative-ai-challenge/#).
+We are **bacon-reloaded** :stuck_out_tongue_winking_eye: This is our repo for our participation in the [**The Malmo Collaborative AI Challenge**](https://www.microsoft.com/en-us/research/academic-program/collaborative-ai-challenge/#).
 
 *******
 # Summary
