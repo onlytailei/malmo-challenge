@@ -271,7 +271,7 @@ def run_experiment(agents_def):
         agent['optimizer'] = optimizer
         agent['shared_model'] = shared_model
         #agent['vis'] = None
-        agent['vis'] = vis
+        agent['vis'] = None
         agent['main_step'] = main_step
         
         p = mp.Process(target=agent_factory, kwargs=agent)

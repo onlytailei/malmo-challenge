@@ -37,9 +37,7 @@ OMP_NUM_THREADS=1 python pig_chase_a3c.py \
     malmo30:10000 \
     malmo31:10000 \
     malmo32:10000 \
-    malmo33:10000 \
-    malmo34:10000 \
-    --num-processes 17
+    --num-processes 16
    # > ./stderr/stderr_swarm_out 2>&1
 #OMP_NUM_THREADS=1 python pig_chase_a3c.py malmo1:10000 malmo2:10000
 #OMP_NUM_THREADS=1 python pig_chase_a3c.py localhost:10000 localhost:10001
