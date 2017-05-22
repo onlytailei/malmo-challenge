@@ -49,4 +49,4 @@ eval = PigChaseEvaluator([['malmo1','10000'], ['malmo2','10000']],my_agent_100k,
 
 # Run and save
 eval.run()
-eval.save('My experiment 1', '/root/malmo_save/second_result')
+eval.save('My experiment 1', '/root/malmo_save/final_result.json')
