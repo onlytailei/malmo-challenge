@@ -1,4 +1,0 @@
-Traceback (most recent call last):
-  File "pig_chase_a3c.py", line 27, in <module>
-    import scipy.ndimage
-ImportError: No module named scipy.ndimage
