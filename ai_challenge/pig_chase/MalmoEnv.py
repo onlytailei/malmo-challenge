@@ -12,6 +12,7 @@ from threading import Thread, active_count
 import thread
 from core.env import Env
 from time import sleep
+import multiprocessing as mp
 
 from common import parse_clients_args
 from malmopy.agent import RandomAgent
@@ -31,7 +32,7 @@ class MalmoEnv(Env):
         print (self.clients)
         
         #oppenent agent
-        oppenent_thread = Thread(target=self._opponent_env, kwargs={'pid':env_ind})
+        oppenent_thread = mp.Process(target=self._opponent_env, kwargs={'pid':env_ind})
         oppenent_thread.daemon=True
         oppenent_thread.start()
         sleep(1)
